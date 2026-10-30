@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <title>Events · Hello Hobnobbers Admin</title>
+
+    <link rel="icon" href="assets/hello-hobnobbers-logo.png">
+    <link rel="stylesheet" href="assets/styles.css">
+</head>
+
+<body>
+
+<div class="admin-shell">
+
+    <aside class="sidebar"></aside>
+
+    <main class="dash-main">
+
+        <div class="dash-top">
+
+            <div>
+                <div class="kicker">Hello Hobnobbers · Admin</div>
+                <h1>Events</h1>
+            </div>
+
+            <div class="dash-top-actions"></div>
+
+        </div>
+
+
+        <!-- FILTER -->
+
+        <div class="filter-row">
+
+            <select id="eventStatus">
+
+                <option value="">All Events</option>
+
+                <option value="published">
+                    Published
+                </option>
+
+                <option value="completed">
+                    Completed
+                </option>
+
+                <option value="draft">
+                    Draft
+                </option>
+
+                <option value="cancelled">
+                    Cancelled
+                </option>
+
+            </select>
+
+
+            <button
+                class="btn small"
+                onclick="events()">
+
+                Refresh
+
+            </button>
+
+        </div>
+
+
+        <div class="two-col">
+
+
+            <!-- CREATE EVENT -->
+
+            <section class="card card-pad">
+
+                <div class="kicker">
+                    Create Event
+                </div>
+
+                <h3>
+                    Publish an event
+                </h3>
+
+
+                <form
+                    id="eventForm"
+                    class="form-grid">
+
+
+                    <div class="field full">
+
+                        <label>
+                            Event Name
+                        </label>
+
+                        <input
+                            name="title"
+                            required>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Category
+                        </label>
+
+                        <input
+                            name="category"
+                            placeholder="Club / Rooftop / Social">
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Venue
+                        </label>
+
+                        <input
+                            name="venue"
+                            required>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Date
+                        </label>
+
+                        <input
+                            name="event_date"
+                            type="date"
+                            required>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Start Time
+                        </label>
+
+                        <input
+                            name="start_time"
+                            type="time"
+                            required>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            End Time
+                        </label>
+
+                        <input
+                            name="end_time"
+                            type="time"
+                            required>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Ticket Price
+                        </label>
+
+                        <input
+                            name="ticket_price"
+                            type="number"
+                            min="0"
+                            step="1"
+                            required>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Total Capacity
+                        </label>
+
+                        <input
+                            name="total_capacity"
+                            type="number"
+                            min="1"
+                            required>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Status
+                        </label>
+
+                        <select name="status">
+
+                            <option value="draft">
+                                Draft
+                            </option>
+
+                            <option value="published">
+                                Published
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label>
+                            Booking Closing At
+                        </label>
+
+                        <input
+                            name="booking_closing_at"
+                            type="datetime-local">
+
+                    </div>
+
+
+                    <div class="field full">
+
+                        <label>
+                            Eligibility Notes
+                        </label>
+
+                        <input
+                            name="eligibility_notes"
+                            placeholder="Age / ID requirements">
+
+                    </div>
+
+
+                    <div class="field full">
+
+                        <label>
+                            Important Info / Rules
+                        </label>
+
+                        <textarea
+                            name="important_info"
+                            rows="4"></textarea>
+
+                    </div>
+
+
+                    <div class="field full">
+
+                        <label>
+                            Cover Image
+                        </label>
+
+                        <input
+                            name="cover_image"
+                            type="file"
+                            accept=".jpg,.jpeg,.png,.webp">
+
+                    </div>
+
+
+                    <div class="field full">
+
+                        <button
+                            class="btn"
+                            type="submit">
+
+                            Create Event
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </section>
+
+
+            <!-- EVENT TABLE -->
+
+            <section>
+
+                <div id="eventsTable">
+
+                    <div class="notice">
+                        Loading…
+                    </div>
+
+                </div>
+
+            </section>
+
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<div class="toast"></div>
+
+
+<!-- MAIN SITE JAVASCRIPT -->
+
+<script src="assets/site.js"></script>
+
+
+<!-- TABLE HELPER -->
+
+<script>
+
+function table(rows, headers, rowFn) {
+
+    rows = Array.isArray(rows) ? rows : [];
+
+
+    if (!rows.length) {
+
+        return `
+            <div class="notice">
+                No events found.
+            </div>
+        `;
+
+    }
+
+
+    return `
+
+        <div style="
+            width:100%;
+            overflow-x:auto;
+            padding:8px;
+            box-sizing:border-box;
+        ">
+
+            <table style="
+                width:100%;
+                min-width:650px;
+                border-collapse:separate;
+                border-spacing:0;
+                table-layout:auto;
+            ">
+
+                <thead>
+
+                    <tr>
+
+                        ${headers.map(h => `
+
+                            <th style="
+                                padding:16px 20px;
+                                text-align:left;
+                                white-space:nowrap;
+                            ">
+
+                                ${h}
+
+                            </th>
+
+                        `).join('')}
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    ${rows.map(rowFn).join('')}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    `;
+
+}
+
+</script>
+
+
+<!-- ADMIN JAVASCRIPT -->
+
+<script src="assets/admin.js"></script>
+
+
+<script src="assets/theme-effects.js" defer></script>
+</body>
+
+</html>

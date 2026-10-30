@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <title>Verification · Hello Hobnobbers Admin</title>
+
+    <link rel="icon" href="assets/hello-hobnobbers-logo.png">
+    <link rel="stylesheet" href="assets/styles.css">
+    <style>
+    #verificationTable {
+        width: 100%;
+        margin-top: 24px;
+    }
+
+    #verificationTable > div {
+        width: 100%;
+    }
+
+    #verificationTable table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: var(--card, #151515);
+        border: 1px solid var(--line, #333);
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    #verificationTable th,
+    #verificationTable td {
+        padding: 16px 18px;
+        text-align: left;
+        border-bottom: 1px solid var(--line, #333);
+        vertical-align: middle;
+    }
+
+    #verificationTable th {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted, #aaa);
+        background: rgba(255,255,255,0.03);
+    }
+
+    #verificationTable td {
+        font-size: 0.92rem;
+    }
+
+    #verificationTable tr:last-child td {
+        border-bottom: none;
+    }
+
+    #verificationTable .btn {
+        white-space: nowrap;
+    }
+
+    @media (max-width: 800px) {
+
+        #verificationTable {
+            overflow-x: auto;
+        }
+
+        #verificationTable table {
+            min-width: 760px;
+        }
+
+    }
+</style>
+</head>
+
+<body>
+
+<div class="admin-shell">
+
+    <aside class="sidebar"></aside>
+
+    <main class="dash-main">
+
+        <div class="dash-top">
+
+            <div>
+                <div class="kicker">
+                    Hello Hobnobbers · Admin
+                </div>
+
+                <h1>Verification</h1>
+
+                <p class="muted">
+                    Review submitted profiles in a proper list view.
+                    Open any user to see the complete verification details.
+                </p>
+            </div>
+
+            <div class="dash-top-actions"></div>
+
+        </div>
+
+
+        <div
+            id="verificationAlert"
+            class="alert-box hidden"
+            role="alert">
+        </div>
+
+
+        <div class="filter-row">
+
+            <select id="verificationStatus">
+
+                <option value="pending">
+                    Pending Verification
+                </option>
+
+                <option value="approved">
+                    Approved
+                </option>
+
+                <option value="rejected">
+                    Rejected
+                </option>
+
+            </select>
+
+
+            <button
+                class="btn small"
+                id="refreshVerification"
+                type="button">
+
+                Refresh
+
+            </button>
+
+        </div>
+
+
+        <div id="verificationTable">
+
+            <div class="notice">
+                Loading…
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<div
+    id="verificationModal"
+    class="modal-backdrop hidden">
+
+    <div class="modal-card">
+
+        <div class="modal-head">
+
+            <div>
+
+                <div class="kicker">
+                    User Verification
+                </div>
+
+                <h2 id="verificationModalTitle">
+                    Profile Details
+                </h2>
+
+            </div>
+
+
+            <button
+                class="icon-btn"
+                id="closeVerificationModal"
+                type="button">
+
+                ×
+
+            </button>
+
+        </div>
+
+
+        <div id="verificationModalBody"></div>
+        <div id="verificationActions" style="margin-top:20px; display:flex; gap:12px;">
+    <button class="btn" id="approveVerificationBtn" type="button">
+        ✓ Approve
+    </button>
+
+    <button class="btn" id="rejectVerificationBtn" type="button">
+        ✕ Reject
+    </button>
+</div>
+
+    </div>
+
+</div>
+
+
+<div class="toast"></div>
+<script>
+
+function esc(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+
+/* API */
+
+async function verificationApi(url, options = {}) {
+
+    const response = await fetch(
+        '../backend/api/' + url,
+        {
+            method: options.method || 'GET',
+
+            headers: {
+                'Content-Type': 'application/json',
+                ...(options.headers || {})
+            },
+
+            credentials: 'include',
+
+            body: options.body
+                ? JSON.stringify(options.body)
+                : undefined
+        }
+    );
+
+    let data;
+
+    try {
+        data = await response.json();
+    } catch (error) {
+        throw new Error('Server returned an invalid response.');
+    }
+
+    if (!response.ok || data.ok === false) {
+        throw new Error(
+            data.error ||
+            data.message ||
+            'Request failed.'
+        );
+    }
+
+    return data;
+}
+
+
+/* Load verification list */
+
+async function loadVerification() {
+
+    const box = document.getElementById('verificationTable');
+
+    const status =
+        document.getElementById('verificationStatus').value;
+
+    box.innerHTML = `
+        <div class="notice">
+            Loading…
+        </div>
+    `;
+
+    try {
+
+        const result = await verificationApi(
+            'admin/verification/list.php?status=' +
+            encodeURIComponent(status)
+        );
+
+        const rows = result.verifications || [];
+
+        if (!rows.length) {
+
+            box.innerHTML = `
+                <div class="notice">
+                    No ${esc(status)} verification records found.
+                </div>
+            `;
+
+            return;
+        }
+
+        let html = `
+            <div style="overflow-x:auto">
+
+                <table class="admin-table">
+
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Contact</th>
+                            <th>Document</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+        `;
+
+        rows.forEach(function(v) {
+
+            html += `
+                <tr>
+
+                    <td>
+                        <b>
+                            ${esc(v.full_name || v.username || '')}
+                        </b>
+                        <br>
+                        <span class="muted">
+                            ${esc(v.username || '')}
+                        </span>
+                    </td>
+
+                    <td>
+                        ${esc(v.mobile_number || '')}
+                        <br>
+                        <span class="muted">
+                            ${esc(v.gender || '')}
+                        </span>
+                    </td>
+
+                    <td>
+                        ${esc(v.doc_type || '')}
+                    </td>
+
+                    <td>
+                        <span class="pill">
+                            ${esc(v.status || '')}
+                        </span>
+                    </td>
+
+                    <td>
+                        <button
+                            class="btn small"
+                            type="button"
+                            data-verification-id="${Number(v.verification_id)}">
+
+                            View
+
+                        </button>
+                    </td>
+
+                </tr>
+            `;
+        });
+
+        html += `
+                    </tbody>
+                </table>
+
+            </div>
+        `;
+
+        box.innerHTML = html;
+
+        box.querySelectorAll('[data-verification-id]')
+            .forEach(function(button) {
+
+                button.addEventListener('click', function() {
+
+                    const id =
+                        Number(button.dataset.verificationId);
+
+                    const item =
+                        rows.find(function(v) {
+                            return Number(v.verification_id) === id;
+                        });
+
+                    if (item) {
+                        openVerification(item);
+                    }
+
+                });
+
+            });
+
+    } catch (error) {
+
+        box.innerHTML = `
+            <div class="notice danger">
+                ${esc(
+                    error.message ||
+                    'Could not load verification records.'
+                )}
+            </div>
+        `;
+    }
+}
+
+
+/* Open modal */
+
+function openVerification(item) {
+
+    const modal =
+        document.getElementById('verificationModal');
+
+    const body =
+        document.getElementById('verificationModalBody');
+
+    body.innerHTML = `
+
+        <div class="profile-details">
+
+            <p>
+                <strong>Name:</strong>
+                ${esc(item.full_name || '-')}
+            </p>
+
+            <p>
+                <strong>Username:</strong>
+                ${esc(item.username || '-')}
+            </p>
+
+            <p>
+                <strong>Mobile:</strong>
+                ${esc(item.mobile_number || '-')}
+            </p>
+
+            <p>
+                <strong>WhatsApp:</strong>
+                ${esc(item.whatsapp_number || '-')}
+            </p>
+
+            <p>
+                <strong>Gender:</strong>
+                ${esc(item.gender || '-')}
+            </p>
+
+            <p>
+                <strong>Date of Birth:</strong>
+                ${esc(item.dob || '-')}
+            </p>
+
+            <p>
+                <strong>Marital Status:</strong>
+                ${esc(item.marital_status || '-')}
+            </p>
+
+            <p>
+                <strong>Instagram:</strong>
+                ${esc(item.instagram_handle || '-')}
+            </p>
+
+            <p>
+                <strong>Document Type:</strong>
+                ${esc(item.doc_type || '-')}
+            </p>
+
+            <p>
+                <strong>Verification Status:</strong>
+                ${esc(item.status || '-')}
+            </p>
+
+            <p>
+                <strong>Submitted:</strong>
+                ${esc(item.submitted_at || '-')}
+            </p>
+
+            <p>
+                <strong>Reviewed:</strong>
+                ${esc(item.reviewed_at || '-')}
+            </p>
+
+        </div>
+
+    `;
+
+    const approveBtn =
+        document.getElementById('approveVerificationBtn');
+
+    const rejectBtn =
+        document.getElementById('rejectVerificationBtn');
+
+
+    /* Approve */
+
+    approveBtn.onclick = async function() {
+
+        if (!confirm('Are you sure you want to approve this verification?')) {
+            return;
+        }
+
+        approveBtn.disabled = true;
+        rejectBtn.disabled = true;
+
+        try {
+
+            await verificationApi(
+                'admin/verification/review.php',
+                {
+                    method: 'POST',
+
+                    body: {
+                        verification_id:
+                            Number(item.verification_id),
+
+                        decision: 'approved'
+                    }
+                }
+            );
+
+            alert('Verification approved successfully.');
+
+            modal.classList.add('hidden');
+
+            await loadVerification();
+
+        } catch (error) {
+
+            alert(
+                error.message ||
+                'Could not approve verification.'
+            );
+
+            approveBtn.disabled = false;
+            rejectBtn.disabled = false;
+        }
+    };
+
+
+    /* Reject */
+
+    rejectBtn.onclick = async function() {
+
+        const reason = prompt(
+            'Enter the reason for rejecting this verification:'
+        );
+
+        if (reason === null) {
+            return;
+        }
+
+        if (!reason.trim()) {
+            alert('Please enter a rejection reason.');
+            return;
+        }
+
+        approveBtn.disabled = true;
+        rejectBtn.disabled = true;
+
+        try {
+
+            await verificationApi(
+                'admin/verification/review.php',
+                {
+                    method: 'POST',
+
+                    body: {
+                        verification_id:
+                            Number(item.verification_id),
+
+                        decision: 'rejected',
+
+                        notes: reason.trim()
+                    }
+                }
+            );
+
+            alert('Verification rejected.');
+
+            modal.classList.add('hidden');
+
+            await loadVerification();
+
+        } catch (error) {
+
+            alert(
+                error.message ||
+                'Could not reject verification.'
+            );
+
+            approveBtn.disabled = false;
+            rejectBtn.disabled = false;
+        }
+    };
+
+
+    /* Show / hide buttons based on status */
+
+    if (item.status === 'pending') {
+
+        approveBtn.style.display = 'inline-flex';
+        rejectBtn.style.display = 'inline-flex';
+
+    } else {
+
+        approveBtn.style.display = 'none';
+        rejectBtn.style.display = 'none';
+    }
+
+
+    modal.classList.remove('hidden');
+}
+
+
+/* Close */
+
+document
+    .getElementById('closeVerificationModal')
+    .addEventListener('click', function() {
+
+        document
+            .getElementById('verificationModal')
+            .classList.add('hidden');
+
+    });
+
+
+/* Refresh */
+
+document
+    .getElementById('refreshVerification')
+    .addEventListener('click', loadVerification);
+
+
+/* Filter */
+
+document
+    .getElementById('verificationStatus')
+    .addEventListener('change', loadVerification);
+
+
+/* Initial load */
+
+loadVerification();
+
+</script>
+
+
+
+
+<script src="assets/theme-effects.js" defer></script>
+</body>
+
+</html>

@@ -1,0 +1,6 @@
+# Uploaded files are served statically — never execute PHP from here.
+<FilesMatch "\.(php|phtml|php\d)$">
+  Require all denied
+  Deny from all
+</FilesMatch>
+Options -Indexes

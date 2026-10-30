@@ -1,0 +1,10 @@
+# Allow cross-origin requests with credentials to be handled by PHP (core/bootstrap.php)
+# rather than blocked outright. No URL rewriting is used — endpoints are called by
+# their direct path, e.g. /backend/api/events/list.php
+Options -Indexes
+<IfModule mod_php7.c>
+  php_flag display_errors off
+</IfModule>
+<IfModule mod_php8.c>
+  php_flag display_errors off
+</IfModule>

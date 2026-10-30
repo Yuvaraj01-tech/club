@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign Up · Hello Hobnobbers</title><meta name="theme-color" content="#0b0612"><link rel="icon" href="assets/hello-hobnobbers-logo.png"><link rel="stylesheet" href="assets/styles.css"></head>
+<body>
+<nav class="navbar"><div class="container nav-inner"><a class="brand" href="index.html"><img src="assets/hello-hobnobbers-logo.png" alt="Hello Hobnobbers"></a><div class="nav-links"><a href="index.html">Home</a><a href="events.html">Events</a><a href="gallery.html">Gallery</a></div><div class="nav-actions"></div></div></nav>
+<main class="page"><div class="container">
+  <div class="page-head"><div class="kicker">Create your account</div><h1>Join Hello Hobnobbers.</h1><p>Browse events first. Your profile is reviewed only when you register to book. Age is calculated automatically from your date of birth.</p></div>
+  <section class="card form-card card-pad">
+    <div id="signupAlert" class="alert-box hidden" role="alert"></div>
+    <form id="signupForm" novalidate>
+      <div class="kicker">Account</div>
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field full"><label for="email">Email Address <span class="required">*</span></label><input id="email" name="email" type="email" required autocomplete="email" placeholder="your@email.com"><span class="help">Your email address is also your username.</span><span class="field-error" data-error-for="email"></span></div>
+        <div class="field"><label for="password">Password <span class="required">*</span></label><div class="password-wrap"><input id="password" name="password" type="password" required minlength="8" autocomplete="new-password" placeholder="Minimum 8 characters"><button type="button" class="password-toggle" data-toggle-password="password" aria-label="Show password">◉</button></div><span class="help">Use at least 8 characters with a letter and a number.</span><span class="field-error" data-error-for="password"></span></div>
+        <div class="field"><label for="confirm_password">Confirm Password <span class="required">*</span></label><div class="password-wrap"><input id="confirm_password" name="confirm_password" type="password" required minlength="8" autocomplete="new-password" placeholder="Re-enter password"><button type="button" class="password-toggle" data-toggle-password="confirm_password" aria-label="Show password">◉</button></div><span class="field-error" data-error-for="confirm_password"></span></div>
+      </div>
+      <hr class="form-sep">
+      <div class="kicker">Personal profile</div>
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field full"><label for="full_name">Full Name <span class="required">*</span></label><input id="full_name" name="full_name" required autocomplete="name"><span class="field-error" data-error-for="full_name"></span></div>
+        <div class="field"><label for="mobile_number">Mobile Number <span class="required">*</span></label><div class="phone-row"><input value="+91" readonly aria-label="Country code"><input id="mobile_number" name="mobile_number" required maxlength="10" inputmode="numeric" autocomplete="tel" placeholder="10 digit mobile"></div><span class="field-error" data-error-for="mobile_number"></span></div>
+        <div class="field"><label>WhatsApp Number <span class="required">*</span></label><label class="checkline whatsapp-check"><input id="whatsapp_same" name="whatsapp_same" type="checkbox" checked> My WhatsApp number is the same as my mobile number</label><span class="help">Uncheck only if your WhatsApp number is different.</span><span class="field-error" data-error-for="whatsapp_number"></span></div>
+        <div class="field full" id="waWrap" style="display:none"><label for="whatsapp_number">WhatsApp Number <span class="required">*</span></label><div class="phone-row"><input value="+91" readonly aria-label="Country code"><input id="whatsapp_number" name="whatsapp_number" maxlength="10" inputmode="numeric" autocomplete="tel" placeholder="10 digit WhatsApp number"></div><span class="field-error" data-error-for="whatsapp_number"></span></div>
+        <div class="field"><label for="gender">Gender <span class="required">*</span></label><select id="gender" name="gender" required><option value="">Select</option><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option></select><span class="field-error" data-error-for="gender"></span></div>
+        <div class="field"><label for="dob">Date of Birth <span class="required">*</span></label><input id="dob" name="dob" type="date" required><span class="field-error" data-error-for="dob"></span></div>
+        <div class="field"><label for="age">Age · Automatic</label><input id="age" readonly placeholder="Calculated from DOB" aria-describedby="ageHelp"><span id="ageHelp" class="help">Age cannot be entered manually.</span><span class="field-error" data-error-for="age"></span></div>
+        <div class="field"><label for="marital_status">Marital Status <span class="required">*</span></label><select id="marital_status" name="marital_status" required><option value="">Select</option><option value="never_married">Never Married</option><option value="separated">Separated</option><option value="divorced">Divorced</option><option value="widowed">Widowed</option></select><span class="field-error" data-error-for="marital_status"></span></div>
+        <div class="field full"><label for="instagram_handle">Instagram · Optional</label><input id="instagram_handle" name="instagram_handle" placeholder="@yourhandle"><span class="field-error" data-error-for="instagram_handle"></span></div>
+      </div>
+      <hr class="form-sep">
+      <div class="kicker">Identity & age eligibility</div>
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field full"><label for="doc_type">Government Document <span class="required">*</span></label><select id="doc_type" name="doc_type" required><option value="">Select document type</option><option value="aadhaar">Aadhaar</option><option value="pan">PAN</option><option value="voter_id">Voter ID</option><option value="dl">Driving Licence</option><option value="any_govt">Any Government Document</option></select><span class="field-error" data-error-for="doc_type"></span></div>
+        <div class="field full"><label for="doc_file">Upload Document <span class="required">*</span></label><input id="doc_file" name="doc_file" type="file" required accept=".jpg,.jpeg,.png,.pdf,.webp"><span class="help">Maximum 8 MB. Accepted: JPG, PNG, WEBP or PDF. Document number is not collected.</span><span class="field-error" data-error-for="doc_file"></span></div>
+      </div>
+      <div id="eligibilityBox" class="notice" style="margin-top:20px">Enter your date of birth to check age eligibility. You must be 18 or older to submit a booking profile.</div>
+      <label class="eligibility-check"><input id="ageEligibleConfirm" type="checkbox" required disabled> <span>I confirm that the automatically calculated age is 18 or above and the details submitted are accurate.</span></label>
+      <span class="field-error" data-error-for="ageEligibleConfirm"></span>
+      <div class="form-actions"><a class="btn secondary" href="events.html">Back to Events</a><button class="btn" type="submit">Submit Profile</button></div>
+    </form>
+    <div id="signupDone" class="hidden"></div>
+  </section>
+</div></main>
+<footer class="footer"><div class="container footer-grid"><div><b>Hello Hobnobbers</b><div class="muted">Curated clubbing & event experiences.</div></div><div>© 2026 Hello Hobnobbers · <a href="admin-login.html">Admin</a></div></div></footer>
+<div class="toast"></div><script src="assets/site.js"></script><script src="assets/theme-effects.js" defer></script></body></html>

@@ -1,0 +1,4 @@
+<?php
+require_once __DIR__ . '/../../../core/bootstrap.php';require_admin();$db=lm_db();$status=$_GET['status']??'';
+$sql="SELECT ep.id,ep.pass_code,ep.status,ep.issued_at,b.booking_code,e.title AS event_title,up.full_name,u.username,(SELECT c.result FROM checkins c WHERE c.pass_id=ep.id ORDER BY c.scanned_at DESC LIMIT 1) last_checkin_result,(SELECT c.scanned_at FROM checkins c WHERE c.pass_id=ep.id ORDER BY c.scanned_at DESC LIMIT 1) last_checkin_at FROM event_passes ep JOIN bookings b ON b.id=ep.booking_id JOIN events e ON e.id=b.event_id JOIN users u ON u.id=b.user_id LEFT JOIN user_profiles up ON up.user_id=u.id";
+$params=[];if(in_array($status,['active','used','expired','cancelled'],true)){$sql.=' WHERE ep.status=?';$params[]=$status;}$sql.=' ORDER BY ep.issued_at DESC';$s=$db->prepare($sql);$s->execute($params);respond(['passes'=>$s->fetchAll()]);
